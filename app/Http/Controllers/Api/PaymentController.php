@@ -59,6 +59,7 @@ class PaymentController extends Controller
 
     public function checkOrderStatus(Request $request)
     {
+
         // Validate input
         $validator = Validator::make($request->all(), [
             'order_id' => 'required|string',
@@ -98,9 +99,13 @@ class PaymentController extends Controller
       
     }
 
-    public function paymentSuccess(){
+    public function paymentSuccess(Request $request){
 
-         
+           $validator = Validator::make($request->all(), [
+            'order_id' => 'required',
+            'user_id' => 'required',
+        ]);
+
          $postData = [
             'check_status' => 1,
             'order_id' => $request->order_id,
@@ -130,7 +135,10 @@ class PaymentController extends Controller
                 'balance' => $new_balance
             ]);
     
-             return response()->json($response->json(), $response->status());
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Payment Done',
+            ], 200);
             
         } else {
             return response()->json([

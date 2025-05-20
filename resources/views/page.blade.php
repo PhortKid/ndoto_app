@@ -399,7 +399,7 @@ $(document).ready(function() {
             })
             .then(response => response.json())
             .then(data => {
-                if (data.status === 'success' && data.payment_status === 'SUCCESS') {
+                if (data.status === 'success' && data.payment_status === 'PENDING') {
                     clearInterval(interval);
                     Swal.fire({
                         title: 'Asante kwa kulipia',
@@ -410,20 +410,20 @@ $(document).ready(function() {
                         backdrop: false
                     }).then(() => {
 
-                        window.location.href = 'success.php';
+                       
                          //start fetch
                             fetch('/api/payment_success', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({
-                                        order_id: order_id,
+                                        order_id: order_id,//je hapa unauhakika data itapatikana
                                         user_id: {{$user->id}},
-                                        status: 'success'
+                                        
                                     })
                                 })
                                 .then(res => res.json())
                                 .then(response => {
-                                    
+                                    //kama kuna error hapa nijuwe 
                                 window.location.href = '/{{$user->name}}'; 
                                     
                                 })
@@ -432,8 +432,8 @@ $(document).ready(function() {
                                 });
                             });
                          //end fetch
-
-                    });
+            
+                    
                 } else if (attempts >= maxAttempts) {
                     clearInterval(interval);
                     Swal.fire({
