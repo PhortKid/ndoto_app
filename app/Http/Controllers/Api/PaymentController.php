@@ -97,9 +97,27 @@ class PaymentController extends Controller
         return response()->json($response->json(), $response->status());
       
     }
-/*
+
     public function paymentSuccess(){
 
+         
+         $postData = [
+            'check_status' => 1,
+            'order_id' => $request->order_id,
+            'api_key' => env('ZENO_API_KEY'),
+            'secret_key' => env('ZENO_SECRET_KEY'),
+        ];
+
+        
+        try {
+            $response = Http::asForm()->post('https://api.zeno.africa/order-status', $postData);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Offline',
+                'error' => 'Your Offline', 
+            ], 500);
+        }
 
         $data=json_decode($response);
 
@@ -122,5 +140,5 @@ class PaymentController extends Controller
         }
         
     }
-*/
+
 }
