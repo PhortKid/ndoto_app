@@ -147,19 +147,25 @@
                                  </div>
                                  <div class="mb-3 ">
                                     <label for="">Your Phone number</label>
-                                    <input type="text" class="form-control">
+                                    <input type="text" class="form-control" id='buyer_phone'>
                                  </div>
 
                                  <div class="mb-3 form-grou">
                                     <label for="">Quantity</label>
                                     <input type="number" class="form-control">
                                  </div>
+
+                                 <div class="mb-3 ">
+                                    <label for="">Total Amount</label>
+                                    <input type="text" class="form-control" id='amount'>
+                                 </div>
+
                                  
                                </form>
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                <button type="button" class="btn btn-warning">Purchase</button>
+                                <button type="button" class="btn btn-warning" onclick="showSweetAlert()">Purchase</button>
                             </div>
                             </div>
                         </div>
@@ -207,7 +213,7 @@
     <!-- Footer -->
     <footer class="bg-dark text-white py-4">
         <div class="container text-center">
-            <p class="mb-0">&copy; {{ date('Y') }} {my.app}. All rights reserved.</p>
+            <p class="mb-0">&copy; {{ date('Y') }} Ndoto App. All rights reserved.</p>
         </div>
     </footer>
 
@@ -251,6 +257,169 @@ $(document).ready(function() {
     $('#anonymous').prop("checked", false);
 });
 </script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+
+    
+    function detectNetwork(phoneNumber) {
+        const networks = {
+            Vodacom: { prefixes: ['074', '075', '076'], logo: 'media/voda.png' },
+            Airtel: { prefixes: ['068', '078', '069'], logo: 'media/airtel.png' },
+            Tigo: { prefixes: ['071', '067', '065'], logo: 'media/tigo.png' },
+            Halotel: { prefixes: ['062', '061'], logo: 'media/halo.png' },
+            TTCL: { prefixes: ['073'], logo: 'media/ttcl.png' }
+        };
+
+        for (const [network, details] of Object.entries(networks)) {
+            if (details.prefixes.some(prefix => phoneNumber.startsWith(prefix))) {
+                return { network, logo: details.logo };
+            }
+        }
+        return { network: 'Unknown Network', logo: null };
+    }
+
+    function showSweetAlert() {
+        const phoneNumber = document.getElementById('buyer_phone').value;
+        const { network, logo } = detectNetwork(phoneNumber);
+
+        Swal.fire({
+        title: `Mtandao wako ni ${network}`,
+        text: 'Endelea na Malipo ?',
+        imageUrl: logo,
+        imageWidth: 100,
+        imageHeight: 100,
+        imageAlt: `${network} Logo`,
+        position: 'bottom',
+        showCancelButton: true,
+        confirmButtonText: 'Yes',
+        cancelButtonText: 'No',
+        backdrop: false
+    }).then((paymentResult) => {
+        if (paymentResult.isConfirmed) {
+            Swal.fire({
+                title: 'Tafadhali subiri...',
+                text: 'Tunatuma maombi ya malipo.',
+                icon: 'info',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                position: 'bottom',
+                backdrop: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            initiatePayment(phoneNumber, network);
+        }
+    });
+
+    }
+
+    function initiatePayment(phoneNumber, network) {
+        fetch('/api/pay', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                buyer_phone: phoneNumber,
+                buyer_network: network,
+                amount:1000,
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                checkPaymentStatus(data.order_id);
+            } else {
+                Swal.fire({
+                    title: 'Badilisha Namba ya Simu',
+                    text: 'Namba yako ya simu haitambuliki. Tafadhali jaribu tena kwa namba tofauti.',
+                    icon: 'warning',
+                    confirmButtonText: 'Try Again',
+                    position: 'bottom',
+                    backdrop: false
+                }).then(() => {
+                    showSweetAlert();
+                });
+            }
+        })
+        .catch(error => Swal.fire('Error', error.message, 'error'));
+    }
+
+    function checkPaymentStatus(order_id) {
+        let attempts = 0;
+        const maxAttempts = 60;
+
+        Swal.fire({
+            title: 'Payment is pending. Please wait...',
+            html: `Time remaining: <strong id="countdown">${maxAttempts}</strong> seconds`,
+            icon: 'info',
+            position: 'bottom',
+            allowOutsideClick: false,
+            showCancelButton: false,
+            showConfirmButton: false,
+            backdrop: false
+        });
+
+        const interval = setInterval(() => {
+            attempts++;
+            const remainingTime = maxAttempts - attempts;
+            document.getElementById('countdown').textContent = remainingTime;
+
+            fetch('/api/check_order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ order_id })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success' && data.payment_status === 'SUCCESS') {
+                    clearInterval(interval);
+                    Swal.fire({
+                        title: 'Asante kwa kulipia',
+                        text: 'Thank you for your payment bonya ok!',
+                        icon: 'success',
+                        position: 'bottom',
+                        confirmButtonText: 'OK',
+                        backdrop: false
+                    }).then(() => {
+                        window.location.href = 'success.php';
+                    });
+                } else if (attempts >= maxAttempts) {
+                    clearInterval(interval);
+                    Swal.fire({
+                        title: 'Malipo Hayajafanikiwa',
+                        text: 'Ndugu mteja haukufanikiwa kulipia jaribu tena.',
+                        icon: 'warning',
+                        position: 'bottom',
+                        confirmButtonText: 'Jaribu tena',
+                        backdrop: false
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                }
+            })
+            .catch(error => {
+                clearInterval(interval);
+                Swal.fire({
+                    title: 'Error',
+                    text: `Kuna Tatizo limetokea la kiufundi : ${error.message}`,
+                    icon: 'error',
+                    position: 'bottom',
+                    confirmButtonText: 'OK',
+                    backdrop: false
+                });
+            });
+        }, 1000);
+    }
+/*
+    window.onload = function () {
+        showSweetAlert();
+    };*/
+</script>
+
 
 </body>
 </html>

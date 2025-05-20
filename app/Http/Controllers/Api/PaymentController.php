@@ -111,7 +111,17 @@ class PaymentController extends Controller
         ];
 
         // Send POST request to Zeno
-        $response = Http::asForm()->post('https://api.zeno.africa/order-status', $postData);
+        try {
+            $response = Http::asForm()->post('https://api.zeno.africa/order-status', $postData);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Offline',
+                'error' => 'Your Offline', 
+            ], 500);
+        }
+        
+        
 
         return response()->json($response->json(), $response->status());
     }
