@@ -152,15 +152,13 @@
 
                                  <div class="mb-3 form-grou">
                                     <label for="">Quantity</label>
-                                    <input type="number" class="form-control">
+                                    <input type="number" class="form-control" min="1" max="{{$item->quantity}}" step="1" value="1">
                                  </div>
 
-                                 <div class="mb-3 ">
-                                    <label for="">Total Amount</label>
-                                    <input type="text" class="form-control" id='amount'>
-                                 </div>
-
-                                 
+                                 <input type="hidden" id="itemCost" value="{{$item->price}}">
+                                 <input type="hidden" id="totalAmount">
+                                
+                                 <p>Total Amount: <span id="displayTotal">0.00</span> TZS</p>
                                </form>
                             </div>
                             <div class="modal-footer">
@@ -260,9 +258,29 @@ $(document).ready(function() {
 
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const quantityInput = document.querySelector('input[type="number"]');
+        const itemCostInput = document.getElementById('itemCost');
+        const totalAmountInput = document.getElementById('totalAmount');
+        const displayTotal = document.getElementById('displayTotal');
+
+        function calculateTotal() {
+            const quantity = parseInt(quantityInput.value) || 0;
+            const itemCost = parseFloat(itemCostInput.value) || 0;
+            const total = quantity * itemCost;
+            totalAmountInput.value = total.toFixed(2);
+            displayTotal.textContent = total.toFixed(2);
+        }
+
+        quantityInput.addEventListener('input', calculateTotal);
+
+        calculateTotal(); // run on load
+    });
+</script>
 
 <script>
-
+   
     
     function detectNetwork(phoneNumber) {
         const networks = {
@@ -312,20 +330,25 @@ $(document).ready(function() {
                 }
             });
 
-            initiatePayment(phoneNumber, network);
+          //  initiatePayment(phoneNumber, network);
+
+          const totalAmount = parseFloat(document.getElementById('totalAmount').value) || 0;
+            initiatePayment(phoneNumber, network, totalAmount);
+
+
         }
     });
 
     }
 
-    function initiatePayment(phoneNumber, network) {
+    function initiatePayment(phoneNumber, network, amount) {
         fetch('/api/pay', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 buyer_phone: phoneNumber,
                 buyer_network: network,
-                amount:1000,
+                amount:amount,
             }),
         })
         .then(response => response.json())
@@ -397,7 +420,7 @@ $(document).ready(function() {
                         confirmButtonText: 'Jaribu tena',
                         backdrop: false
                     }).then(() => {
-                        window.location.reload();
+                        showSweetAlert();
                     });
                 }
             })
