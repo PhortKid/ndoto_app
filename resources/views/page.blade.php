@@ -36,10 +36,10 @@
                         <a class="nav-link" href="#">Home</a>
                     </li>
                     <li class="nav-item ms-2">
-                        <a class="btn btn-light" href="/login">Login</a>
+                        <a class="btn btn-light" href="/user/login">login</a>
                     </li>
                     <li class="nav-item ms-2">
-                        <a class="btn btn-warning" href="/register">Sign Up</a>
+                        <a class="btn btn-warning" href="/user/register">Sign Up</a>
                     </li>
                 </ul>
             </div>
