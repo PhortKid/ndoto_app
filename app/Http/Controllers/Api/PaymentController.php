@@ -93,54 +93,34 @@ class PaymentController extends Controller
         
         
 
+        
+        return response()->json($response->json(), $response->status());
+      
+    }
+/*
+    public function paymentSuccess(){
+
+
         $data=json_decode($response);
 
- if($data->payment_status=="SUCCESS"){
         $find_user_wallet = Wallet::find($request->user_id);
 
         if ($find_user_wallet) {
             $new_balance = $find_user_wallet->balance + $data->amount;
-
+    
             $find_user_wallet->update([
                 'balance' => $new_balance
             ]);
-
-            return response()->json($response->json(), $response->status());
+    
+             return response()->json($response->json(), $response->status());
+            
         } else {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Wallet not found',
             ], 404);
         }
-
-    return response()->json($response->json(), $response->status());
-
-
-
- }else if($data->payment_status=="PENDING"){
-    $find_user_wallet = Wallet::find($request->user_id);
-
-    if ($find_user_wallet) {
-        $new_balance = $find_user_wallet->balance + $data->amount;
-
-        $find_user_wallet->update([
-            'balance' => $new_balance
-        ]);
-
-         return response()->json($response->json(), $response->status());
         
-    } else {
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Wallet not found',
-        ], 404);
     }
-    
- }else{
-
- }
-
-     
-      
-    }
+*/
 }

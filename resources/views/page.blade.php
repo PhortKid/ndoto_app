@@ -409,7 +409,30 @@ $(document).ready(function() {
                         confirmButtonText: 'OK',
                         backdrop: false
                     }).then(() => {
+
                         window.location.href = 'success.php';
+                         //start fetch
+                            fetch('/api/payment_success', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        order_id: order_id,
+                                        user_id: {{$user->id}},
+                                        status: 'success'
+                                    })
+                                })
+                                .then(res => res.json())
+                                .then(response => {
+                                    
+                                window.location.href = '/{{$user->name}}'; 
+                                    
+                                })
+                                .catch(error => {
+                                    console.log(error);
+                                });
+                            });
+                         //end fetch
+
                     });
                 } else if (attempts >= maxAttempts) {
                     clearInterval(interval);

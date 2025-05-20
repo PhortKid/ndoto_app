@@ -59,8 +59,8 @@ function (){
 Route::get('truncate_wallet',
 function (){
  
-
-    Wallet::truncate();
+    Wallet::where('user_id', 1)->update(['balance' => 0]);
+   // Wallet::truncate();
 }
 );
 
