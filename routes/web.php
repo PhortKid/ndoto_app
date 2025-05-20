@@ -56,7 +56,7 @@ function ($id){
 }
 );
 */
-Route::get('/user/{username}', function ($username) {
+Route::get('/{username}', function ($username) {
     // Retrieve the user based on the username
     $user = User::where('name', $username)->first();
 
