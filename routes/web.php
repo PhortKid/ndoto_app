@@ -1,5 +1,5 @@
 <?php
-
+use App\Models\Wallet;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ItemsController;
@@ -47,15 +47,23 @@ Route::resource('workspace_items',App\Http\Controllers\ItemsController::class)->
 
 Route::get('pay',[App\Http\Controllers\PaymentController::class,'pay']);
 Route::get('verify',[App\Http\Controllers\PaymentController::class,'verify']);
-/*
-Route::get('purchase/{id}',
-function ($id){
+
+Route::get('create_wallet',
+function (){
  
 
-    $items = Item::find($id);
+    Wallet::create(['user_id'=>'1']);
 }
 );
-*/
+
+Route::get('truncate_wallet',
+function (){
+ 
+
+    Wallet::truncate();
+}
+);
+
 Route::get('/{username}', function ($username) {
     // Retrieve the user based on the username
     $user = User::where('name', $username)->first();

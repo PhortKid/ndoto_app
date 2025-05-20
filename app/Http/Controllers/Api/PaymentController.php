@@ -1,53 +1,13 @@
 <?php
-/*
-namespace App\Http\Controllers\Api;
 
-use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Http;
-
-class PaymentController extends Controller
-{
-    public function createOrder(Request $request)
-    {
-        $validated = $request->validate([
-            'buyer_phone' => 'required|string',
-            'buyer_network' => 'nullable|string',
-            'amount' => 'required|numeric',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Validation failed',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $orderData = [
-            'create_order' => 1,
-            'buyer_phone' => $validated['buyer_phone'],
-            'buyer_name' => 'username',
-            'buyer_email' => 'email@gmail.com',
-            'amount' => $validated['amount'],
-            'account_id' => env('ZENO_ACCOUNT_ID', 'zp86069'),
-            'api_key' => env('ZENO_API_KEY'),
-            'secret_key' => env('ZENO_SECRET_KEY'),
-        ];
-
-        $response = Http::asForm()->post('https://api.zeno.africa', $orderData);
-
-        return response()->json($response->json(), $response->status());
-    }
-}
-*/
 
 namespace App\Http\Controllers\Api;
-
+use App\Models\Wallet;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
+
 
 class PaymentController extends Controller
 {
@@ -79,7 +39,17 @@ class PaymentController extends Controller
             'secret_key' => env('ZENO_SECRET_KEY'),
         ];
 
-        $response = Http::asForm()->post('https://api.zeno.africa', $orderData);
+        
+
+        try {
+            $response = Http::asForm()->post('https://api.zeno.africa', $orderData);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Offline',
+                'error' => 'Your Offline', 
+            ], 500);
+        }
 
         return response()->json($response->json(), $response->status());
     }
@@ -123,6 +93,54 @@ class PaymentController extends Controller
         
         
 
-        return response()->json($response->json(), $response->status());
+        $data=json_decode($response);
+
+ if($data->payment_status=="SUCCESS"){
+        $find_user_wallet = Wallet::find($request->user_id);
+
+        if ($find_user_wallet) {
+            $new_balance = $find_user_wallet->balance + $data->amount;
+
+            $find_user_wallet->update([
+                'balance' => $new_balance
+            ]);
+
+            return response()->json($response->json(), $response->status());
+        } else {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Wallet not found',
+            ], 404);
+        }
+
+    return response()->json($response->json(), $response->status());
+
+
+
+ }else if($data->payment_status=="PENDING"){
+    $find_user_wallet = Wallet::find($request->user_id);
+
+    if ($find_user_wallet) {
+        $new_balance = $find_user_wallet->balance + $data->amount;
+
+        $find_user_wallet->update([
+            'balance' => $new_balance
+        ]);
+
+         return response()->json($response->json(), $response->status());
+        
+    } else {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Wallet not found',
+        ], 404);
+    }
+    
+ }else{
+
+ }
+
+     
+      
     }
 }

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $user->name }}'s Wishlist - {my.app}</title>
+    <title>{{ $user->name }}'s Wishlist - Ndoto App</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
@@ -22,7 +22,7 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-cream">
         <div class="container">
             <a class="navbar-brand position-relative" href="#">
-                <span class="position-relative z-3">{my.app}</span>
+                <span class="position-relative z-3">Ndoto App</span>
                 <svg class="position-absolute z-2" style="top: -8px; left: -12px;" width="79" height="79" viewBox="0 0 79 79" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M35.2574 2.24264C37.6005 -0.100501 41.3995 -0.100505 43.7426 2.24264L76.7574 35.2574C79.1005 37.6005 79.1005 41.3995 76.7574 43.7426L43.7426 76.7574C41.3995 79.1005 37.6005 79.1005 35.2574 76.7574L2.24264 43.7426C-0.100501 41.3995 -0.100505 37.6005 2.24264 35.2574L35.2574 2.24264Z" fill="#65DAFF"/>
                 </svg>
@@ -349,6 +349,7 @@ $(document).ready(function() {
                 buyer_phone: phoneNumber,
                 buyer_network: network,
                 amount:amount,
+                user_id:{{$user->id}},
             }),
         })
         .then(response => response.json())
@@ -394,7 +395,7 @@ $(document).ready(function() {
             fetch('/api/check_order', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ order_id })
+                body: JSON.stringify({ order_id,user_id:{{$user->id}} })
             })
             .then(response => response.json())
             .then(data => {
